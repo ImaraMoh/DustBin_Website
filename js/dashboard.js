@@ -51,15 +51,29 @@ document.addEventListener("DOMContentLoaded", () => {
   // Save initial bins & tracks (Run once if DB is empty)
   function initData() {
     const sampleBins = Array.from({ length: 20 }, (_, i) => {
-      return {
-        id: i + 1,
-        location: `Location ${i + 1}`,
-        fill: `${Math.floor(Math.random() * 60) + 40}%`,
-        lat: 6.9 + Math.random(),
-        lng: 79.8 + Math.random(),
-        assigned: false,
-        lastUpdated: Date.now()
-      };
+      if (i === 0) {
+        // Bin 1 — University of Moratuwa
+        return {
+          id: 1,
+          location: "University of Moratuwa",
+          fill: `${Math.floor(Math.random() * 60) + 40}%`,
+          lat: 6.7951,   // ✅ Real latitude
+          lng: 79.9009,  // ✅ Real longitude
+          assigned: false,
+          lastUpdated: Date.now()
+        };
+      } else {
+        // Other bins — random demo data
+        return {
+          id: i + 1,
+          location: `Location ${i + 1}`,
+          fill: `${Math.floor(Math.random() * 60) + 40}%`,
+          lat: 6.9 + Math.random(),
+          lng: 79.8 + Math.random(),
+          assigned: false,
+          lastUpdated: Date.now()
+        };
+      }
     });
 
     const sampleTracks = [
@@ -73,7 +87,8 @@ document.addEventListener("DOMContentLoaded", () => {
     sampleBins.forEach(bin => set(ref(db, `bins/${bin.id}`), bin));
     sampleTracks.forEach(track => set(ref(db, `tracks/${track.id}`), track));
   }
-  // initData(); // uncomment this ONCE to populate DB
+
+  initData(); // uncomment this ONCE to populate DB
 
   // Render bins
   function renderPriorityBins() {
@@ -231,7 +246,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // 🔹 Live bin level from sensor for bin1
-  const BIN_HEIGHT_CM = 100;
+  const BIN_HEIGHT_CM = 18;
   onValue(ref(db, "/bin1/distance"), snapshot => {
     const distance = snapshot.val();
     if (typeof distance === "number" && priorityBins.length > 0) {
