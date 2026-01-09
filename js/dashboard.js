@@ -41,8 +41,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const statCards = document.querySelectorAll(".stat-card");
   const binHeading = document.getElementById("bin-heading");
 
-  function getColor(fill) {
-    const num = parseInt(fill);
+  function getColor(fill_level) {
+    const num = parseInt(fill_level);
     if (num > 75) return "red";
     if (num > 50) return "orange";
     return "green";
@@ -51,29 +51,16 @@ document.addEventListener("DOMContentLoaded", () => {
   // Save initial bins & tracks (Run once if DB is empty)
   function initData() {
     const sampleBins = Array.from({ length: 20 }, (_, i) => {
-      if (i === 0) {
-        // Bin 1 — University of Moratuwa
-        return {
-          id: 1,
-          location: "University of Moratuwa",
-          fill: `${Math.floor(Math.random() * 60) + 40}%`,
-          lat: 6.7951,   // ✅ Real latitude
-          lng: 79.9009,  // ✅ Real longitude
-          assigned: false,
-          lastUpdated: Date.now()
-        };
-      } else {
-        // Other bins — random demo data
+      // Other bins — random demo data
         return {
           id: i + 1,
           location: `Location ${i + 1}`,
-          fill: `${Math.floor(Math.random() * 60) + 40}%`,
+          fill_level: `${Math.floor(Math.random() * 60) + 40}%`,
           lat: 6.9 + Math.random(),
           lng: 79.8 + Math.random(),
           assigned: false,
           lastUpdated: Date.now()
         };
-      }
     });
 
     const sampleTracks = [
@@ -100,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
     currentBins.forEach(bin => {
       const card = document.createElement("div");
       card.className = "priority-card";
-      const color = getColor(bin.fill);
+      const color = getColor(bin.fill_level);
 
       let assignedInfo = "";
       if (bin.assignedAt) {
@@ -113,9 +100,9 @@ document.addEventListener("DOMContentLoaded", () => {
       card.innerHTML = `
         <h3 class="bin-id" style="color: ${color};">Bin ID: ${bin.id}</h3>
         <p>${bin.location}</p>
-        <p>Bin Level: ${bin.fill}</p>
+        <p>Bin Level: ${bin.fill_level}</p>
         <div class="progress-container">
-          <div class="progress-bar ${color}" style="width: ${parseInt(bin.fill)}%"></div>
+          <div class="progress-bar ${color}" style="width: ${parseInt(bin.fill_level)}%"></div>
         </div>
         ${assignedInfo}
       `;
@@ -207,7 +194,7 @@ document.addEventListener("DOMContentLoaded", () => {
         filteredBins = [...priorityBins];
         binHeading.textContent = "All Bins";
       } else if (type === "need") {
-        filteredBins = priorityBins.filter(bin => parseInt(bin.fill) > 75);
+        filteredBins = priorityBins.filter(bin => parseInt(bin.fill_level) > 75);
         binHeading.textContent = "Bins Needing Immediate Collection";
       } else if (type === "assigned") {
         filteredBins = priorityBins.filter(bin => bin.assigned === true);
@@ -247,13 +234,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 🔹 Live bin level from sensor for bin1
   const BIN_HEIGHT_CM = 18;
-  onValue(ref(db, "/bin1/distance"), snapshot => {
+  onValue(ref(db, "bins/bin1/distance"), snapshot => {
     const distance = snapshot.val();
     if (typeof distance === "number" && priorityBins.length > 0) {
       let fillPercent = ((BIN_HEIGHT_CM - distance) / BIN_HEIGHT_CM) * 100;
       fillPercent = Math.max(0, Math.min(100, fillPercent));
       update(ref(db, `bins/1`), { 
-        fill: `${Math.round(fillPercent)}%`,
+        fill_level: `${Math.round(fillPercent)}%`,
         lastUpdated: Date.now()
       });
     }
